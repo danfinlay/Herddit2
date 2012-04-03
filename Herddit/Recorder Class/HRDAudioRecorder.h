@@ -27,6 +27,7 @@
 -(void)upload;
 -(void)resumePlaying;
 -(void)resumeRecording;
+-(void)initializeRecorder;
 
 @property (readwrite, copy) NSURL *url;
 

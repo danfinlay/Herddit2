@@ -8,7 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import "HRDComment.h"
+#import "HRDTopic.h"
 @class HRDComment;
+@class HRDTopic;
 
 @interface HRDBareComment : NSObject{
 	BOOL expanded;
@@ -19,9 +21,11 @@
 	NSString *author;
 	NSString *name;
 	
+	int vote;
+	
 	//Maybe THIS is where we'll include the progress bar info...
 }
-
+-(id)initWithTopic:(HRDTopic *)topic;
 -(id)initWithComment:(HRDComment *)original andIndentation:(int)indent;
 
 @property BOOL expanded;
@@ -30,5 +34,6 @@
 @property (readonly) NSString * author;
 @property (readonly) NSString *name;
 @property (readonly) NSString *body;
+@property (readwrite) int vote;
 
 @end

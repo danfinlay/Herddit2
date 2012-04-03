@@ -20,12 +20,14 @@
 		title = [dataDict valueForKey:@"title"];
 		real_id = [dataDict valueForKey:@"name"];
 		poster_name = [dataDict valueForKey:@"author"];
-		url = [dataDict valueForKey:@"url"];
+		
+		
+		url = [NSString stringWithFormat:@"%@%@",[dataDict valueForKey:@"url"], @"?client_id=4c65f6b723a93defa57007fc8d0ebc44"];
+		
+		
 		subreddit = [dataDict valueForKey:@"subreddit"];
 		subreddit_id = [dataDict valueForKey:@"subreddit_id"];
 		commentCount = [[dataDict valueForKey:@"num_comments"] intValue];
-		
-		[self fetchComments];
 		
 		return self;
 	}else{
@@ -33,30 +35,40 @@
 	}
 }
 -(void)fetchComments{
-	HRDCommentArray *commentFetcher = [[HRDCommentArray alloc] initWithPermalink:[dataDict valueForKey:@"permalink"] delegate:self];
+	commentFetcher = [[HRDCommentArray alloc] initWithPermalink:[dataDict valueForKey:@"permalink"] delegate:self];
 	
-	[commentArray addObjectsFromArray:[commentFetcher commentArray]];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(commentsFetched:) name:@"commentsFetched" object:nil];
 	
-/**
-I was considering using a "displayPrepArray" to dump all the comments in a linear order, but now I'm getting too tired to do that.  I might find a different way to solve this problem in the morning.
- 
-	displayPrepArray = [[NSMutableArray alloc] init];
-	for (int i = 0; i<[commentArray count]; i++){
-		[displayPrepArray addObjectsFromArray:[[commentArray objectAtIndex:i] commentDump]];
-	}
- **/
+	
+	
+}
+-(void)commentsFetched:(NSNotification *)notification{
+		[commentArray addObjectsFromArray:[commentFetcher commentArray]];
+	NSLog(@"%i comments fetched.", [commentArray count]);
+	
+	[[NSNotificationCenter defaultCenter] 
+	 postNotificationName:@"topicCommentsReceived" 
+	 object:self];
+
 }
 -(NSArray *)commentQueue{
 	NSMutableArray *buildQueue = [[NSMutableArray alloc] init];
+	//Add topic as first of queue:
+	HRDBareComment *topicComment = [[HRDBareComment alloc] initWithTopic:self];
+	[buildQueue addObject:topicComment];
 	
+	commentArray = [NSMutableArray arrayWithArray:[commentFetcher commentArray]];
+	
+	NSLog(@"Building a queue from %i original comments.", [commentArray count]);
 	for (int i = 0; i<[commentArray count]; i++){
 		
-		HRDBareComment *newComment = [[HRDBareComment alloc] initWithComment:[commentArray objectAtIndex:i] andIndentation:0];
-		[buildQueue addObject:newComment];
+		//Recursively add subsequent generations:
+		NSLog(@"Adding comment array bare array results to buildqueue, type %@.", [[commentArray objectAtIndex:i] class]);
 		[buildQueue addObjectsFromArray:
 		 [[commentArray objectAtIndex:i] bareArray:0]];
 		
 	}
+
 	return buildQueue;
 }
 @end

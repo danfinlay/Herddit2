@@ -14,6 +14,11 @@
 -(id)init{
 	self = [super init];
 	
+	[self initializeRecorder];
+	return self;
+}
+-(void)initializeRecorder{
+	recorder = nil;
 	NSError *error;
 	
 	//First creating AudioSession, then Recorder.
@@ -38,29 +43,28 @@
 	 [settings setValue:[NSNumber numberWithInt:16] forKey:AVEncoderBitDepthHintKey];
 	 **/
 	
-	
-	[settings setValue:[NSNumber numberWithFloat:8000.0] forKey:AVSampleRateKey];
+	//These work fine on Simulator:
+	[settings setValue:[NSNumber numberWithFloat:16000.0] forKey:AVSampleRateKey];
 	[settings setValue:[NSNumber numberWithInt:kAudioFormatMPEG4AAC] forKey:AVFormatIDKey]; 
-	[settings setValue:[NSNumber numberWithInt: 1] forKey:AVNumberOfChannelsKey];
+	[settings setValue:[NSNumber numberWithInt: 2] forKey:AVNumberOfChannelsKey];
 	[settings setObject:[NSNumber numberWithInt:AVAudioQualityLow] forKey: AVEncoderAudioQualityKey]; 
-	[settings setValue:[NSNumber numberWithInt: 8000] forKey:AVEncoderBitRateKey];
+	[settings setValue:[NSNumber numberWithInt: 16] forKey:AVEncoderBitRateKey];
 	
 	/**Unneccessary encoder settings:
-	[settings setValue:[NSNumber numberWithInt:AVAudioQualityMin] forKey:AVEncoderAudioQualityKey]; 
-	[settings setValue:[NSNumber numberWithInt:96] forKey:AVEncoderBitRateKey]; 
-	[settings setValue:[NSNumber numberWithInt:16] forKey:AVEncoderBitDepthHintKey];**/
+	 [settings setValue:[NSNumber numberWithInt:AVAudioQualityMin] forKey:AVEncoderAudioQualityKey]; 
+	 [settings setValue:[NSNumber numberWithInt:96] forKey:AVEncoderBitRateKey]; 
+	 [settings setValue:[NSNumber numberWithInt:16] forKey:AVEncoderBitDepthHintKey];**/
 	
 	//Establishing file path:
 	//NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
 	
 	url = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent: [NSString stringWithFormat: @"%.0f.%@", [NSDate timeIntervalSinceReferenceDate] * 1000.0, @"aac"]]];
 	NSLog(@"Using File called: %@",url);
-				
-recorder = [[ AVAudioRecorder alloc] initWithURL:url settings:settings error:&error];
+	
+	recorder = [[ AVAudioRecorder alloc] initWithURL:url settings:settings error:&error];
 	toggle = YES;
-//[recorder setDelegate:self];
+	//[recorder setDelegate:self];
 	[recorder prepareToRecord];
-	return self;
 }
 
 -(void)startRecording{
